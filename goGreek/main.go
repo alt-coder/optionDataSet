@@ -135,8 +135,7 @@ func worker(id int, ch <-chan OptionMeta) {
 	}
 }
 
-// main function to test the getlistOfFiles function
-func main() {
+func dumpFiles( )  {
 	path := "..\\dataset"
 	files := getlistOfFiles(path)
 	wg :=  sync.WaitGroup{}
@@ -160,5 +159,13 @@ func main() {
 		}
 	}
 	close(ch)
+	wg.Wait()
+	return 
+}
+
+
+// main function to test the getlistOfFiles function
+func main() {
+	
 }
 
