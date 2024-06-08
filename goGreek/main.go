@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/gocarina/gocsv"
-	gg "github.com/jasonmerecki/gopriceoptions"
 	"io/fs"
+	"math"
 	"os"
 	"path/filepath"
 	"sync"
+
+	"github.com/gocarina/gocsv"
+	gg "github.com/jasonmerecki/gopriceoptions"
 )
 
 func getlistOfFiles(path string) []string {
@@ -116,6 +118,32 @@ type OptionMeta struct {
 	Options []*OptionData
 }
 
+func deletionRoutine(ch <-chan string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	counters := make(map[string]int)
+	defer fmt.Printf("%+v\n", counters)
+	list := make(map[string]int)
+	for file := range ch {
+		dir := filepath.Dir(file)
+		folder := filepath.Base(dir)
+		counters[folder]++
+		if counters[folder] > 7 {
+			list[dir] += 1
+			println(dir, " the folder will be deleted")
+			delete(counters, folder)
+		}
+	}
+
+	for dir, _ := range list {
+		err := os.RemoveAll(dir)
+		if err != nil {
+			fmt.Printf("Error deleting directory: %v\n", err)
+		} else {
+			fmt.Printf("Deleted directory: %s\n", dir)
+		}
+	}
+}
+
 func worker(id int, ch <-chan OptionMeta) {
 	for data := range ch {
 		path := data.path
@@ -127,26 +155,176 @@ func worker(id int, ch <-chan OptionMeta) {
 		fmt.Printf("finished Processing %s\n", path)
 		f, err := os.Create(path)
 		if err != nil {
-			fmt.Println("Error creating file:  ", err,  path)
+			fmt.Println("Error creating file:  ", err, path)
 			continue
 		}
-		gocsv.MarshalFile( &options, f)
+		gocsv.MarshalFile(&options, f)
 		f.Close()
 	}
 }
 
-func dumpFiles( )  {
+// workerInputter is a function that takes in the number of workers and imputes the Nan va;ues
+
+func workerInputter(id int, ch <-chan OptionMeta, delchan chan string) {
+	for data := range ch {
+		path := data.path
+		options := data.Options
+		delCtr := 0
+		change := false
+		// fmt.Println("Worker", id, "started inputting: ", path)
+		for i := 1; i < len(options)-1; i++ {
+			prev := options[i-1]
+			curr := options[i]
+			next := options[i+1]
+			ctr := 0
+
+			if curr.StrikePrice >= curr.UnderlyingLTP-400 && curr.StrikePrice <= curr.UnderlyingLTP+400 {
+				// for all the fields of curr, if the field is NaN and the same field of prev or next is not NaN, then input average of prev and next to curr
+				if math.IsNaN(curr.CALL_LTP) && (!math.IsNaN(prev.CALL_LTP) || !math.IsNaN(next.CALL_LTP)) {
+					curr.CALL_LTP = (prev.CALL_LTP + next.CALL_LTP) / 2
+					change = true
+				} else if math.IsNaN(prev.CALL_LTP) && math.IsNaN(curr.CALL_LTP) && math.IsNaN(next.CALL_LTP) {
+					// println("Error: All CALL_LTP values are NaN",path, curr.StrikePrice,)
+					ctr += 1
+				}
+				if math.IsNaN(curr.PUT_LTP) && (!math.IsNaN(prev.PUT_LTP) || !math.IsNaN(next.PUT_LTP)) {
+					curr.PUT_LTP = (prev.PUT_LTP + next.PUT_LTP) / 2
+					change = true
+				} else if math.IsNaN(prev.PUT_LTP) && math.IsNaN(curr.PUT_LTP) && math.IsNaN(next.PUT_LTP) {
+					// println("Error: All PUT_LTP values are NaN",path, curr.StrikePrice,)
+					ctr += 1
+				}
+				if math.IsNaN(curr.GAMMA_CALL) && (!math.IsNaN(prev.GAMMA_CALL) || !math.IsNaN(next.GAMMA_CALL)) {
+					curr.GAMMA_CALL = (prev.GAMMA_CALL + next.GAMMA_CALL) / 2
+					change = true
+				} else if math.IsNaN(prev.GAMMA_CALL) && math.IsNaN(curr.GAMMA_CALL) && math.IsNaN(next.GAMMA_CALL) {
+					// println("Error: All GAMMA_CALL values are NaN",path, curr.StrikePrice,)
+					ctr += 1
+				}
+				if math.IsNaN(curr.GAMMA_PUT) && (!math.IsNaN(prev.GAMMA_PUT) || !math.IsNaN(next.GAMMA_PUT)) {
+					curr.GAMMA_PUT = (prev.GAMMA_PUT + next.GAMMA_PUT) / 2
+					change = true
+				} else if math.IsNaN(prev.GAMMA_PUT) && math.IsNaN(curr.GAMMA_PUT) && math.IsNaN(next.GAMMA_PUT) {
+					// println("Error: All GAMMA_PUT values are NaN",path, curr.StrikePrice,)
+					ctr += 1
+				}
+				if math.IsNaN(curr.IV_CALL) && (!math.IsNaN(prev.IV_CALL) || !math.IsNaN(next.IV_CALL)) {
+					curr.IV_CALL = (prev.IV_CALL + next.IV_CALL) / 2
+					change = true
+				} else if math.IsNaN(prev.IV_CALL) && math.IsNaN(curr.IV_CALL) && math.IsNaN(next.IV_CALL) {
+					// println("Error: All IV_CALL values are NaN",path, curr.StrikePrice,)
+					ctr += 1
+				}
+				if math.IsNaN(curr.IV_PUT) && (!math.IsNaN(prev.IV_PUT) || !math.IsNaN(next.IV_PUT)) {
+					curr.IV_PUT = (prev.IV_PUT + next.IV_PUT) / 2
+					change = true
+				} else if math.IsNaN(prev.IV_PUT) && math.IsNaN(curr.IV_PUT) && math.IsNaN(next.IV_PUT) {
+					// println("Error: All IV_PUT values are NaN",path, curr.StrikePrice,)
+					ctr += 1
+				}
+
+				if math.IsNaN(curr.DELTA_CALL) && (!math.IsNaN(prev.DELTA_CALL) || !math.IsNaN(next.DELTA_CALL)) {
+					curr.DELTA_CALL = (prev.DELTA_CALL + next.DELTA_CALL) / 2
+					change = true
+				} else if math.IsNaN(prev.DELTA_CALL) && math.IsNaN(curr.DELTA_CALL) && math.IsNaN(next.DELTA_CALL) {
+					// println("Error: All DELTA_CALL values are NaN",path, curr.StrikePrice,)
+					ctr += 1
+				}
+				if math.IsNaN(curr.DELTA_PUT) && (!math.IsNaN(prev.DELTA_PUT) || !math.IsNaN(next.DELTA_PUT)) {
+					curr.DELTA_PUT = (prev.DELTA_PUT + next.DELTA_PUT) / 2
+					change = true
+				} else if math.IsNaN(prev.DELTA_PUT) && math.IsNaN(curr.DELTA_PUT) && math.IsNaN(next.DELTA_PUT) {
+					// println("Error: All DELTA_PUT values are NaN",path, curr.StrikePrice,)
+					ctr += 1
+				}
+				if math.IsNaN(curr.THETA_CALL) && (!math.IsNaN(prev.THETA_CALL) || !math.IsNaN(next.THETA_CALL)) {
+					curr.THETA_CALL = (prev.THETA_CALL + next.THETA_CALL) / 2
+					change = true
+				} else if math.IsNaN(prev.THETA_CALL) && math.IsNaN(curr.THETA_CALL) && math.IsNaN(next.THETA_CALL) {
+					// println("Error: All THETA_CALL values are NaN",path, curr.StrikePrice,)
+					ctr += 1
+				}
+				if math.IsNaN(curr.THETA_PUT) && (!math.IsNaN(prev.THETA_PUT) || !math.IsNaN(next.THETA_PUT)) {
+					curr.THETA_PUT = (prev.THETA_PUT + next.THETA_PUT) / 2
+					change = true
+				} else if math.IsNaN(prev.THETA_PUT) && math.IsNaN(curr.THETA_PUT) && math.IsNaN(next.THETA_PUT) {
+					// println("Error: All THETA_PUT values are NaN",path, curr.StrikePrice,)
+					ctr += 1
+				}
+				if math.IsNaN(curr.RHO_CALL) && (!math.IsNaN(prev.RHO_CALL) || !math.IsNaN(next.RHO_CALL)) {
+					curr.RHO_CALL = (prev.RHO_CALL + next.RHO_CALL) / 2
+					change = true
+				} else if math.IsNaN(prev.RHO_CALL) && math.IsNaN(curr.RHO_CALL) && math.IsNaN(next.RHO_CALL) {
+					// println("Error: All RHO_CALL values are NaN",path, curr.StrikePrice,)
+					ctr += 1
+				}
+				if math.IsNaN(curr.RHO_PUT) && (!math.IsNaN(prev.RHO_PUT) || !math.IsNaN(next.RHO_PUT)) {
+					curr.RHO_PUT = (prev.RHO_PUT + next.RHO_PUT) / 2
+					change = true
+				} else if math.IsNaN(prev.RHO_PUT) && math.IsNaN(curr.RHO_PUT) && math.IsNaN(next.RHO_PUT) {
+					// println("Error: All RHO_PUT values are NaN",path, curr.StrikePrice,)
+					ctr += 1
+				}
+				if math.IsNaN(curr.UnderlyingLTP) && (!math.IsNaN(prev.UnderlyingLTP) || !math.IsNaN(next.UnderlyingLTP)) {
+					curr.UnderlyingLTP = (prev.UnderlyingLTP + next.UnderlyingLTP) / 2
+					change = true
+				} else if math.IsNaN(prev.UnderlyingLTP) && math.IsNaN(curr.UnderlyingLTP) && math.IsNaN(next.UnderlyingLTP) {
+					// println("Error: All UnderlyingLTP values are NaN",path, curr.StrikePrice,)
+					ctr += 1
+				}
+
+				if math.IsNaN(curr.DaysToExpiry) && (!math.IsNaN(prev.DaysToExpiry) || !math.IsNaN(next.DaysToExpiry)) {
+					curr.DaysToExpiry = (prev.DaysToExpiry + next.DaysToExpiry) / 2
+				} else if math.IsNaN(prev.DaysToExpiry) && math.IsNaN(curr.DaysToExpiry) && math.IsNaN(next.DaysToExpiry) {
+					// println("Error: All DaysToExpiry values are NaN",path, curr.StrikePrice,)
+					ctr += 1
+				}
+				if math.IsNaN(curr.Vega_Put) && (!math.IsNaN(prev.Vega_Put) || !math.IsNaN(next.Vega_Put)) {
+					curr.Vega_Put = (prev.Vega_Put + next.Vega_Put) / 2
+				} else if math.IsNaN(curr.Vega_Put) && (!math.IsNaN(prev.Vega_Put) || !math.IsNaN(next.Vega_Put)) {
+					// println("Error: All Vega_Put values are NaN",path, curr.StrikePrice,)
+					ctr += 1
+				}
+			}
+			if ctr > 0 {
+				delCtr += 1
+			}
+			if delCtr > 6 || curr.UnderlyingLTP == 0 {
+				delchan <- path
+				break
+			}
+		}
+		if delCtr > 4 {
+
+			continue
+		}
+		if change {
+			f, err := os.Create(path)
+			if err != nil {
+				fmt.Println("Error creating file:  ", err, path)
+				continue
+			}
+			gocsv.MarshalFile(&options, f)
+			f.Close()
+		}
+
+	}
+}
+
+func dumpFiles() {
 	path := "..\\dataset"
 	files := getlistOfFiles(path)
-	wg :=  sync.WaitGroup{}
-	ch  := make(chan OptionMeta, len(files))
-	for  i := 0; i < 8; i++ {
-		 wg.Add(1)
+	wg := sync.WaitGroup{}
+	ch := make(chan OptionMeta, len(files))
+
+	for i := 0; i < 8; i++ {
+		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			worker(i, ch)
+			worker(int(i), ch)
 		}()
 	}
+
 	for i, file := range files {
 		data, err := ParseOptionData(file)
 		if err != nil {
@@ -154,18 +332,44 @@ func dumpFiles( )  {
 		}
 		// Use the data from
 		ch <- OptionMeta{path: file, Options: data}
-		if i% 100 == 0 {
-			 fmt.Printf("Processed %d files\n", i)
+		if i%100 == 0 {
+			fmt.Printf("Processed %d files\n", i)
 		}
 	}
 	close(ch)
-	wg.Wait()
-	return 
-}
 
+	wg.Wait()
+	return
+}
 
 // main function to test the getlistOfFiles function
 func main() {
-	
+	path := "..\\dataset"
+	files := getlistOfFiles(path)
+	wg := sync.WaitGroup{}
+	ch := make(chan OptionMeta, len(files))
+	delCh := make(chan string, 1000)
+	for i := 0; i < 8; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			workerInputter(i, ch, delCh)
+		}()
+	}
+	wg.Add(1)
+	go deletionRoutine(delCh, &wg)
+	for i, file := range files {
+		data, err := ParseOptionData(file)
+		if err != nil {
+			fmt.Println(err, file)
+		}
+		// Use the data from
+		ch <- OptionMeta{path: file, Options: data}
+		if i%100 == 0 {
+			fmt.Printf("Processed %d files\n", i)
+		}
+	}
+	close(ch)
+	close(delCh)
+	wg.Wait()
 }
-
