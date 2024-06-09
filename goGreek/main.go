@@ -6,6 +6,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"sort"
 	"sync"
 
 	"github.com/gocarina/gocsv"
@@ -118,6 +119,32 @@ type OptionMeta struct {
 	Options []*OptionData
 }
 
+func MaxOptionData(od1, od2 *OptionData) *OptionData {
+	return &OptionData{
+		StrikePrice:        math.Max(od1.StrikePrice, od2.StrikePrice),
+		CALL_LTP:           math.Max(od1.CALL_LTP, od2.CALL_LTP),
+		PUT_LTP:           math.Max(od1.PUT_LTP, od2.PUT_LTP),
+		GAMMA_CALL:         math.Max(od1.GAMMA_CALL, od2.GAMMA_CALL),
+		GAMMA_PUT:         math.Max(od1.GAMMA_PUT, od2.GAMMA_PUT),
+		IV_CALL:           math.Max(od1.IV_CALL, od2.IV_CALL),
+		IV_PUT:           math.Max(od1.IV_PUT, od2.IV_PUT),
+		VOLUME_CALL:        int(math.Max(float64(od1.VOLUME_CALL), float64(od2.VOLUME_CALL))),
+		VOLUME_PUT:         int(math.Max(float64(od1.VOLUME_PUT), float64(od2.VOLUME_PUT))),
+		DELTA_CALL:         math.Max(od1.DELTA_CALL, od2.DELTA_CALL),
+		DELTA_PUT:         math.Max(od1.DELTA_PUT, od2.DELTA_PUT),
+		THETA_CALL:        math.Max(od1.THETA_CALL, od2.THETA_CALL),
+		THETA_PUT:        math.Max(od1.THETA_PUT, od2.THETA_PUT),
+		RHO_CALL:          math.Max(od1.RHO_CALL, od2.RHO_CALL),
+		RHO_PUT:          math.Max(od1.RHO_PUT, od2.RHO_PUT),
+		UnderlyingLTP:     math.Max(od1.UnderlyingLTP, od2.UnderlyingLTP),
+		CALL_OPEN_INTEREST: int(math.Max(float64(od1.CALL_OPEN_INTEREST), float64(od2.CALL_OPEN_INTEREST))),
+		PUT_OPEN_INTEREST:  int(math.Max(float64(od1.PUT_OPEN_INTEREST), float64(od2.PUT_OPEN_INTEREST))),
+		DaysToExpiry:       math.Max(od1.DaysToExpiry, od2.DaysToExpiry),
+		Vega_Call:         math.Max(od1.Vega_Call, od2.Vega_Call),
+		Vega_Put:          math.Max(od1.Vega_Put, od2.Vega_Put),
+	}
+}
+
 func deletionRoutine(ch <-chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
 	counters := make(map[string]int)
@@ -148,11 +175,25 @@ func worker(id int, ch <-chan OptionMeta) {
 	for data := range ch {
 		path := data.path
 		options := data.Options
-		fmt.Println("Worker", id, "started processing: ", path)
+		// fmt.Println("Worker", id, "started processing: ", path)
+		optionMap := make(map[float64]*OptionData)
+		for _, option := range options {
+			if _, ok := optionMap[option.StrikePrice]; !ok {
+				optionMap[option.StrikePrice] = option
+				continue
+			}
+			optionMap[option.StrikePrice] = MaxOptionData(optionMap[option.StrikePrice], option)
+		}
+		
+		options = make([]*OptionData, 0, len(optionMap))
+		for _, option := range optionMap {
+			options = append(options, option)
+	   }
+		sort.Slice(options, func(i, j int) bool { return options[i].StrikePrice < options[j].StrikePrice })
 		for _, option := range options {
 			getGreeks(option)
 		}
-		fmt.Printf("finished Processing %s\n", path)
+		// fmt.Printf("finished Processing %s\n", path)
 		f, err := os.Create(path)
 		if err != nil {
 			fmt.Println("Error creating file:  ", err, path)
@@ -171,6 +212,7 @@ func workerInputter(id int, ch <-chan OptionMeta, delchan chan string) {
 		options := data.Options
 		delCtr := 0
 		change := false
+		isIntheRange := false
 		// fmt.Println("Worker", id, "started inputting: ", path)
 		for i := 1; i < len(options)-1; i++ {
 			prev := options[i-1]
@@ -178,7 +220,8 @@ func workerInputter(id int, ch <-chan OptionMeta, delchan chan string) {
 			next := options[i+1]
 			ctr := 0
 
-			if curr.StrikePrice >= curr.UnderlyingLTP-400 && curr.StrikePrice <= curr.UnderlyingLTP+400 {
+			if curr.StrikePrice >= curr.UnderlyingLTP-300 && curr.StrikePrice <= curr.UnderlyingLTP+300 {
+				isIntheRange =true
 				// for all the fields of curr, if the field is NaN and the same field of prev or next is not NaN, then input average of prev and next to curr
 				if math.IsNaN(curr.CALL_LTP) && (!math.IsNaN(prev.CALL_LTP) || !math.IsNaN(next.CALL_LTP)) {
 					curr.CALL_LTP = (prev.CALL_LTP + next.CALL_LTP) / 2
@@ -286,7 +329,7 @@ func workerInputter(id int, ch <-chan OptionMeta, delchan chan string) {
 					ctr += 1
 				}
 			}
-			if ctr > 0 {
+			if ctr > 0 || !isIntheRange{
 				delCtr += 1
 			}
 			if delCtr > 6 || curr.UnderlyingLTP == 0 {
@@ -317,7 +360,7 @@ func dumpFiles() {
 	wg := sync.WaitGroup{}
 	ch := make(chan OptionMeta, len(files))
 
-	for i := 0; i < 8; i++ {
+	for i := 0; i < 12; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -332,7 +375,7 @@ func dumpFiles() {
 		}
 		// Use the data from
 		ch <- OptionMeta{path: file, Options: data}
-		if i%100 == 0 {
+		if i%1000 == 0 {
 			fmt.Printf("Processed %d files\n", i)
 		}
 	}
@@ -344,6 +387,7 @@ func dumpFiles() {
 
 // main function to test the getlistOfFiles function
 func main() {
+	// dumpFiles()
 	path := "..\\dataset"
 	files := getlistOfFiles(path)
 	wg := sync.WaitGroup{}
