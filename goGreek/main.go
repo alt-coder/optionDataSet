@@ -148,18 +148,24 @@ func MaxOptionData(od1, od2 *OptionData) *OptionData {
 func deletionRoutine(ch <-chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
 	counters := make(map[string]int)
-	defer fmt.Printf("%+v\n", counters)
+	// defer fmt.Printf("%+v\n", counters)
 	list := make(map[string]int)
 	for file := range ch {
 		dir := filepath.Dir(file)
 		folder := filepath.Base(dir)
 		counters[folder]++
-		if counters[folder] > 7 {
+		if counters[folder] > 12 {
 			list[dir] += 1
 			println(dir, " the folder will be deleted")
 			delete(counters, folder)
 		}
 	}
+
+	// for dir,_ := range counters {
+	// 	if _, ok := list[dir]; !ok {
+	// 		fmt.Printf("the folder is not being deleted %s\n", dir)
+	// 	}
+	// }
 
 	for dir, _ := range list {
 		err := os.RemoveAll(dir)
@@ -206,7 +212,7 @@ func worker(id int, ch <-chan OptionMeta) {
 
 // workerInputter is a function that takes in the number of workers and imputes the Nan va;ues
 
-func workerInputter(id int, ch <-chan OptionMeta, delchan chan string) {
+func workerInputter(id int, ch <-chan OptionMeta, delchan chan string ) {
 	for data := range ch {
 		path := data.path
 		options := data.Options
@@ -329,16 +335,17 @@ func workerInputter(id int, ch <-chan OptionMeta, delchan chan string) {
 					ctr += 1
 				}
 			}
-			if ctr > 0 || !isIntheRange{
+			if ctr > 0 {
 				delCtr += 1
 			}
-			if delCtr > 6 || curr.UnderlyingLTP == 0 {
+			if delCtr > 5 || curr.UnderlyingLTP == 0 {
 				delchan <- path
 				break
 			}
 		}
-		if delCtr > 4 {
+		if delCtr > 5 || !isIntheRange{
 
+			delchan <- path
 			continue
 		}
 		if change {
@@ -358,6 +365,8 @@ func dumpFiles() {
 	path := "..\\dataset"
 	files := getlistOfFiles(path)
 	wg := sync.WaitGroup{}
+	
+
 	ch := make(chan OptionMeta, len(files))
 
 	for i := 0; i < 12; i++ {
@@ -391,6 +400,7 @@ func main() {
 	path := "..\\dataset"
 	files := getlistOfFiles(path)
 	wg := sync.WaitGroup{}
+	wgdel := sync.WaitGroup{}
 	ch := make(chan OptionMeta, len(files))
 	delCh := make(chan string, 1000)
 	for i := 0; i < 8; i++ {
@@ -400,8 +410,8 @@ func main() {
 			workerInputter(i, ch, delCh)
 		}()
 	}
-	wg.Add(1)
-	go deletionRoutine(delCh, &wg)
+	wgdel.Add(1)
+	go deletionRoutine(delCh, &wgdel)
 	for i, file := range files {
 		data, err := ParseOptionData(file)
 		if err != nil {
@@ -409,11 +419,13 @@ func main() {
 		}
 		// Use the data from
 		ch <- OptionMeta{path: file, Options: data}
-		if i%100 == 0 {
+		if i%10000 == 0 {
 			fmt.Printf("Processed %d files\n", i)
 		}
 	}
 	close(ch)
-	close(delCh)
 	wg.Wait()
+	close(delCh)
+	wgdel.Wait()
+	
 }
