@@ -2,3 +2,5 @@ github.com/gocarina/gocsv v0.0.0-20240520201108-78e41c74b4b1 h1:FWNFq4fM1wPfcK40
 github.com/gocarina/gocsv v0.0.0-20240520201108-78e41c74b4b1/go.mod h1:5YoVOkjYAQumqlV356Hj3xeYh4BdZuLE0/nRkf2NKkI=
 github.com/jasonmerecki/gopriceoptions v0.0.0-20201025232819-6db8d0e2e493 h1:jslE6e6Am5HrAGsKqJT4dOIXfbE7/0JvLYd8Yo2L7h4=
 github.com/jasonmerecki/gopriceoptions v0.0.0-20201025232819-6db8d0e2e493/go.mod h1:86CG+tFZ6pAQ0IDoWXwJ7WEExTZOpVB964NaSI60gPs=
+gonum.org/v1/gonum v0.15.0 h1:2lYxjRbTYyxkJxlhC+LvJIx3SsANPdRybu1tGj9/OrQ=
+gonum.org/v1/gonum v0.15.0/go.mod h1:xzZVBJBtS+Mz4q0Yl2LJTk+OxOg4jiXZ7qBoM0uISGo=
