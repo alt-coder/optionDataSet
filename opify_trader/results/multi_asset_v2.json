@@ -1,0 +1,74 @@
+{
+ "SENSEX": {
+  "TRAIN": {
+   "months": 11,
+   "trades": 89,
+   "strategy_comp%": 9.8,
+   "index_bh_comp%": 5.2,
+   "mean%/expiry": 0.205,
+   "regime_strat%/mo": {
+    "RANGE": 0.28,
+    "UP": 1.25,
+    "DOWN": 1.54
+   },
+   "regime_index%/mo": {
+    "RANGE": -0.22,
+    "UP": 3.83,
+    "DOWN": -4.3
+   }
+  },
+  "TEST": {
+   "months": 20,
+   "trades": 213,
+   "strategy_comp%": 12.4,
+   "index_bh_comp%": -5.4,
+   "mean%/expiry": 0.151,
+   "regime_strat%/mo": {
+    "RANGE": 0.94,
+    "UP": -0.99,
+    "DOWN": 1.75
+   },
+   "regime_index%/mo": {
+    "RANGE": 0.01,
+    "UP": 4.48,
+    "DOWN": -6.56
+   }
+  }
+ },
+ "BANKNIFTY": {
+  "TRAIN": {
+   "months": 18,
+   "trades": 70,
+   "strategy_comp%": 16.5,
+   "index_bh_comp%": 21.0,
+   "mean%/expiry": 0.343,
+   "regime_strat%/mo": {
+    "RANGE": 0.8,
+    "UP": 1.31,
+    "DOWN": 0.05
+   },
+   "regime_index%/mo": {
+    "RANGE": -0.34,
+    "UP": 4.46,
+    "DOWN": -2.73
+   }
+  },
+  "TEST": {
+   "months": 27,
+   "trades": 168,
+   "strategy_comp%": 37.8,
+   "index_bh_comp%": 10.0,
+   "mean%/expiry": 0.581,
+   "regime_strat%/mo": {
+    "DOWN": 2.5,
+    "UP": 1.03,
+    "RANGE": 0.74
+   },
+   "regime_index%/mo": {
+    "DOWN": -4.94,
+    "UP": 4.37,
+    "RANGE": 0.6
+   }
+  }
+ }
+}

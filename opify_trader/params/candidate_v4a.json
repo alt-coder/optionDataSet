@@ -1,0 +1,42 @@
+{
+ "_version": "candidate_v4a-2026-10-29",
+ "_frozen_on": "2026-10-29, re-learned on regime-balanced TRAIN months only (params/split.json); TEST = other 2023-25 months + all 2026",
+ "_strategy": "trend_spread_3sleeve",
+ "sleeves_dte": [
+  1,
+  2,
+  3
+ ],
+ "capital": 2600000,
+ "mode": "concept",
+ "entry": "15:00",
+ "exit": "15:15",
+ "ema": 20,
+ "k_sigma": 0.6,
+ "wing_sigma": 0.8,
+ "tp_x": 0.8,
+ "sl_x": 1.0,
+ "alloc": 0.5,
+ "vrp_min": 0,
+ "check_every": 30,
+ "_rationale": {
+  "structure": "Defined-risk vertical credit spread on the nearest weekly NIFTY expiry. Bull PUT spread when close > EMA(20) of daily closes, bear CALL spread when below. Captures equity drift + the structural put-skew/variance risk premium while never selling against the short-term trend.",
+  "k_sigma=0.8": "Short strike at 0.8 x expected move (1 sigma ~ 1.25 x ATM straddle). Vol-scaled so distance adapts to regime and time-to-expiry automatically (~20% touch probability). Plateau 0.6-1.0 all positive in 2023/24/25.",
+  "wing_sigma=0.8": "Long wing 0.8 sigma beyond the short: defined max loss, cheap enough not to eat the credit. Plateau 0.6-1.0.",
+  "tp_x=0.8": "Take profit when 80% of credit captured - remaining 20% carries most of the gamma risk (manage-winners concept).",
+  "sl_x=1.0": "Stop when loss = 1x credit: caps left tail; with ~70% win rate this keeps expectancy positive after costs.",
+  "entry=15:00": "Trend signal is defined on the daily close; entering near the close keeps execution consistent with the signal and earns the overnight decay.",
+  "sleeves 1,2,3": "Entry day has no conceptual edge, so instead of picking the best backtested day we run all three with equal capital (anti-overfitting diversification).",
+  "ema=20": "Weekly-horizon trade needs a short-term trend; EMA 50 lags (failed in sensitivity).",
+  "check_every=30": "Agent checks every 30 min; results robust from 1 to 60 min cadence.",
+  "no_leverage": "Capital Rs 26L own funds, no borrowing. Margin used <= alloc (50%) of each sleeve's capital, so <= 13L total. Every short has a long wing (max loss bounded). Unused capital may sit in a pledged liquid fund (reported separately).",
+  "premium_filter": "Skip new entries when premium is FAIR: ATM IV < 11.2% AND IV/RV10 < 1.22 (TRAIN-month lower terciles). Vol study: short premium has no edge in that bucket. On TRAIN it was the only rule positive in every regime (UP/DOWN/RANGE monthly mean +1.11/+0.42/+0.64%), plateau 13/14 neighbours pass. v1 passed only 30%.",
+  "adaptation": "The skill adapts by reading option pricing (is insurance expensive?), not by labelling the market regime.",
+  "iron_condor": "AGGRESSIVE: v4 with trend-side short at 0.6 sigma (more premium & risk). TRAIN net/margin 0.97%/setup, regimes +2.21/+1.67/+1.28."
+ },
+ "rich_iv": 0.112,
+ "rich_ratio": 1.22,
+ "fair_scale": 0.0,
+ "opp_k": 2.0,
+ "_status": "CANDIDATE - examine on TEST months (3 indices) before use"
+}

@@ -1,0 +1,25 @@
+{
+ "alloc_within_each_third": 0.5,
+ "test_months": 27,
+ "total_return%": 22.9,
+ "annualised_pre_tax%": 9.6,
+ "annualised_post_tax%": 6.6,
+ "nifty_same_months_total%": 8.6,
+ "max_drawdown_daily%": -2.5,
+ "trades": 673,
+ "win%": 72.5,
+ "expiries_traded": 264,
+ "avg_net_per_expiry_%_of_capital": 0.087,
+ "net_by_index": {
+  "NIFTY": 226034,
+  "SENSEX": 80010,
+  "BANKNIFTY": 289083
+ },
+ "max_single_trade_loss": -28131,
+ "regime_mean%/mo (sum of entry-month P&L / 26L)": {
+  "DOWN": 2.15,
+  "UP": 0.23,
+  "RANGE": 0.63
+ },
+ "max_margin_one_trade": 198669
+}

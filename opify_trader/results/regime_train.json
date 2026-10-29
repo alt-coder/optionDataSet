@@ -1,0 +1,116 @@
+{
+ "v1": {
+  "stats": {
+   "UP": {
+    "months": 7,
+    "strat_mean%": 1.93,
+    "nifty_mean%": 4.01,
+    "pos_months%": 86.0,
+    "worst%": -1.53,
+    "trades": 85
+   },
+   "DOWN": {
+    "months": 4,
+    "strat_mean%": 0.12,
+    "nifty_mean%": -3.57,
+    "pos_months%": 25.0,
+    "worst%": -2.95,
+    "trades": 41
+   },
+   "RANGE": {
+    "months": 8,
+    "strat_mean%": 0.17,
+    "nifty_mean%": 0.11,
+    "pos_months%": 50.0,
+    "worst%": -2.77,
+    "trades": 103
+   },
+   "ALL": {
+    "months": 19,
+    "strat_mean%": 0.8,
+    "nifty_mean%": 0.77,
+    "pos_months%": 58.0,
+    "worst%": -2.95
+   }
+  },
+  "passes": true,
+  "worst_regime_mean%": 0.12,
+  "plateau_pass_rate": 0.3
+ },
+ "v1+band0.25": {
+  "stats": {
+   "UP": {
+    "months": 7,
+    "strat_mean%": 1.41,
+    "nifty_mean%": 4.01,
+    "pos_months%": 71.0,
+    "worst%": -3.51,
+    "trades": 85
+   },
+   "DOWN": {
+    "months": 4,
+    "strat_mean%": 0.5,
+    "nifty_mean%": -3.57,
+    "pos_months%": 50.0,
+    "worst%": -0.01,
+    "trades": 41
+   },
+   "RANGE": {
+    "months": 8,
+    "strat_mean%": -0.05,
+    "nifty_mean%": 0.11,
+    "pos_months%": 50.0,
+    "worst%": -4.23,
+    "trades": 103
+   },
+   "ALL": {
+    "months": 19,
+    "strat_mean%": 0.6,
+    "nifty_mean%": 0.77,
+    "pos_months%": 58.0,
+    "worst%": -4.23
+   }
+  },
+  "passes": false,
+  "worst_regime_mean%": -0.05,
+  "plateau_pass_rate": 0.5
+ },
+ "v1+band0.5": {
+  "stats": {
+   "UP": {
+    "months": 7,
+    "strat_mean%": 1.46,
+    "nifty_mean%": 4.01,
+    "pos_months%": 86.0,
+    "worst%": -3.68,
+    "trades": 85
+   },
+   "DOWN": {
+    "months": 4,
+    "strat_mean%": 1.49,
+    "nifty_mean%": -3.57,
+    "pos_months%": 75.0,
+    "worst%": 0.0,
+    "trades": 41
+   },
+   "RANGE": {
+    "months": 8,
+    "strat_mean%": -0.19,
+    "nifty_mean%": 0.11,
+    "pos_months%": 50.0,
+    "worst%": -6.84,
+    "trades": 103
+   },
+   "ALL": {
+    "months": 19,
+    "strat_mean%": 0.77,
+    "nifty_mean%": 0.77,
+    "pos_months%": 68.0,
+    "worst%": -6.84
+   }
+  },
+  "passes": false,
+  "worst_regime_mean%": -0.19,
+  "plateau_pass_rate": 0.1
+ }
+}

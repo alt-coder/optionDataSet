@@ -1,0 +1,8 @@
+{"date_run": "2026-10-29", "controller": "opify_ui.js v1.3", "trades": [
+ {"trade":1,"entry":"2025-02-03 15:00","exit":"2025-02-04 15:16","structure":"S 23100PE / B 22850PE x750","regime":"DOWN","reason":"target","predicted":15038,"opify_realized":15037.5},
+ {"trade":2,"entry":"2025-02-10 15:00","exit":"2025-02-11 13:16","structure":"S 23700CE / B 24000CE x750","regime":"DOWN","reason":"target","predicted":22612,"opify_realized":22612.5},
+ {"trade":3,"entry":"2025-03-04 15:00","exit":"2025-03-05 09:46","structure":"S 22300CE / B 22500CE x675","regime":"UP","reason":"stop","predicted":-18529,"opify_realized":-18528.8},
+ {"trade":4,"entry":"2025-03-18 15:00","exit":"2025-03-20 09:16","structure":"S 22600PE / B 22400PE x675","regime":"UP","reason":"target","predicted":10395,"opify_realized":10395.1},
+ {"trade":5,"entry":"2025-08-04 15:00","exit":"2025-08-06 10:16","structure":"S 25000CE / B 25250CE x750","regime":"RANGE","reason":"target","predicted":15225,"opify_realized":15225.0}],
+ "plus_earlier": {"entry":"2026-01-08 15:00","exit":"2026-01-09 12:46","predicted":19422,"opify_realized":19422},
+ "max_abs_error_rupees": 0.5, "native_alerts": 0}

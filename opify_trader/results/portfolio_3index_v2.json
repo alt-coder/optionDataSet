@@ -1,0 +1,23 @@
+{
+ "test_months": 27,
+ "compounded%": 79.3,
+ "annualised_pre_tax%": 29.6,
+ "annualised_post_tax%": 20.4,
+ "nifty_annualised%": 3.7,
+ "maxDD_monthly%": -4.7,
+ "worst_month%": -4.7,
+ "pos_months%": 74,
+ "regime_mean%/mo": {
+  "DOWN": 5.56,
+  "UP": 0.98,
+  "RANGE": 1.49
+ },
+ "avg_return_per_expiry_traded%": 0.22,
+ "expiries_traded": 276,
+ "bootstrap": {
+  "median%": 29.4,
+  "p5%": 6.9,
+  "P(loss year)": 0.012,
+  "P(beat nifty)": 0.848
+ }
+}
